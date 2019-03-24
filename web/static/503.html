@@ -1,0 +1,26 @@
+<!doctype html>
+<title>gutenberg.run</title>
+<script>
+var pull, baseHost, redirect;
+
+pull = document.cookie
+	.split( ';' )
+	.map( function( segment ) {
+		return segment.trim().split( '=' );
+	} )
+	.filter( function( pair ) {
+		return pair[ 0 ] === 'pull';
+	} )
+	.map( function( pair ) {
+		return pair[ 1 ];
+	} )[ 0 ];
+
+baseHost = window.location.host.split( '.' ).slice( 1 ).join( '.' );
+redirect = window.location.protocol + '//' + baseHost;
+
+if ( pull ) {
+	redirect += '/?pull=' + pull;
+}
+
+window.location = redirect;
+</script>

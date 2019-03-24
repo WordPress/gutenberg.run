@@ -1,0 +1,65 @@
+version: '3'
+
+services:
+  nginx-proxy:
+    image: jwilder/nginx-proxy
+    ports:
+      - "80:80"
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - ./web/vhost.conf:/etc/nginx/vhost.d/${BASE_HOSTNAME:-gutenberg.run.test}:ro
+      - ./web/site.conf:/etc/nginx/conf.d/0-site.conf:ro
+      - ./web/static:/www/web/static:ro
+    networks:
+      - internal
+      - public
+
+  db:
+    image: mariadb
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-password}
+    networks:
+      - internal
+      - public
+
+  cleaner:
+    build: ./images/gutenbergrun-cleaner
+    environment:
+      - CONTAINER_TTL_SECONDS=${CONTAINER_TTL_SECONDS:-86400}
+      - BUILD_TTL_DAYS=${BUILD_TTL_DAYS:-30}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-password}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:delegated
+      - ./build:/src/build:delegated
+      - ./trees:/src/trees:delegated
+    depends_on:
+      - db
+    networks:
+      - internal
+
+  web:
+    build: ./web
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - BASE_HOSTNAME=${BASE_HOSTNAME:-gutenberg.run.test}
+      - VIRTUAL_HOST=${BASE_HOSTNAME:-gutenberg.run.test}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-password}
+      - CONTAINER_TTL_SECONDS=${CONTAINER_TTL_SECONDS:-86400}
+      - SENTRY_DSN=${SENTRY_DSN:-}
+      - HOST_ROOT=$PWD
+      - HOST_HOME=$HOME
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ~/.npm:/root/.npm:delegated
+      - .:/src:delegated
+      - /src/web/node_modules
+    depends_on:
+      - db
+      - cleaner
+    networks:
+      - internal
+
+networks:
+  internal:
+  public:

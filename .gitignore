@@ -1,0 +1,18 @@
+# Bare repository (keep configuration)
+/source/*
+!/source/config
+
+# Pull clones
+/trees/*
+!/trees/.gitkeep
+
+# Dependencies
+node_modules
+
+# Transient
+/build
+*.min.css
+*.min.js
+
+# User Configuration
+.env
