@@ -38,7 +38,7 @@ async function respond( request, response ) {
 		response.write( 'data:' + JSON.stringify( message ) + '\n\n' );
 
 		if ( message.type === 'ERROR' ) {
-			break;
+			return response.end();
 		}
 	}
 
