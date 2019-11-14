@@ -20,6 +20,7 @@ const {
 	CONTAINER_TTL_SECONDS,
 	PUBLIC_NETWORK_NAME,
 } = require( '../../constants' );
+const getTaggedImageName = require( '../../util/get-tagged-image-name' );
 
 /**
  * Provisions site.
@@ -83,7 +84,7 @@ async function* run( task, meta ) {
 		`TIME_REMAINING_END=${ endTime }`,
 		'-v',
 		HOST_BUILD_ROOT + ':/build',
-		SITE_IMAGE,
+		await getTaggedImageName( SITE_IMAGE ),
 	] );
 	yield { type: 'RECEIVE_CONTAINER_ID', containerId: id };
 

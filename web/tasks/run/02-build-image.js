@@ -18,6 +18,7 @@ const {
 	HOST_TREES_ROOT,
 	WORKER_IMAGE,
 } = require( '../../constants' );
+const getTaggedImageName = require( '../../util/get-tagged-image-name' );
 
 /**
  * Builds container image.
@@ -61,7 +62,7 @@ async function* run( task, meta ) {
 		join( HOST_TREES_ROOT, sha ) + ':/src',
 		'-w',
 		'/src',
-		WORKER_IMAGE,
+		await getTaggedImageName( WORKER_IMAGE ),
 	], { cwd: tree } );
 
 	// Move build distributable.

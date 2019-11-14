@@ -14,6 +14,7 @@ const {
 	SITE_IMAGE,
 	WORKER_IMAGE,
 } = require( '../../constants' );
+const getTaggedImageName = require( '../../util/get-tagged-image-name' );
 
 /**
  * Builds required application images.
@@ -21,25 +22,14 @@ const {
  * @return {Promise} Promise resolving once task completes.
  */
 async function run() {
-	// Derive tag from current Git HEAD.
-	let tag;
-	try {
-		( { stdout: tag } = await execa( 'git', [ 'rev-parse', 'HEAD' ] ) );
-	} catch ( error ) {}
-
-	// If Git is unavailable, fall back to date timestamp value.
-	if ( ! tag ) {
-		tag = 'latest';
-	}
-
 	await Promise.all( [
 		SITE_IMAGE,
 		WORKER_IMAGE,
-	].map( ( image ) => {
+	].map( async ( image ) => {
 		return execa( 'docker', [
 			'build',
 			'-t',
-			[ image, tag ].join( ':' ),
+			await getTaggedImageName( image ),
 			'.',
 		], { cwd: join( IMAGES_ROOT, image ) } );
 	} ) );
