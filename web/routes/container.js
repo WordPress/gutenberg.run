@@ -24,7 +24,7 @@ const REGEXP_ROUTE_PATH = /^\/container\/([a-z0-9]+)/;
  * @param {http.ClientResponse} response Response object.
  */
 async function respond( request, response ) {
-	const containerId = request.url.match( REGEXP_ROUTE_PATH )[ 1 ];
+	const containerId = request.parsed.pathname.match( REGEXP_ROUTE_PATH )[ 1 ];
 
 	try {
 		const { stdout: image } = await execa( 'docker', [

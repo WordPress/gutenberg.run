@@ -19,7 +19,7 @@ const REGEXP_ROUTE_PATH = /^\/create\/([a-z0-9]+)/;
  * @param {http.ClientResponse} response Response object.
  */
 async function respond( request, response ) {
-	const sha = request.url.match( REGEXP_ROUTE_PATH )[ 1 ];
+	const sha = request.parsed.pathname.match( REGEXP_ROUTE_PATH )[ 1 ];
 
 	const id = getShortId();
 

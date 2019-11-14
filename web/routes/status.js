@@ -18,7 +18,7 @@ const REGEXP_ROUTE_PATH = /^\/status\/([a-z0-9]+)/;
  * @param {http.ClientResponse} response Response object.
  */
 async function respond( request, response ) {
-	const id = request.url.match( REGEXP_ROUTE_PATH )[ 1 ];
+	const id = request.parsed.pathname.match( REGEXP_ROUTE_PATH )[ 1 ];
 
 	if ( ! builds.has( id ) ) {
 		response.statusCode = 404;
