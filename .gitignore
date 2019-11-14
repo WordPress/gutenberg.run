@@ -16,3 +16,6 @@ node_modules
 
 # User Configuration
 .env
+
+# System
+.DS_Store
