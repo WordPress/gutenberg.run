@@ -5,10 +5,8 @@ RUN apk add nodejs-npm git php7 zip bash curl
 RUN npm install -g npm@latest
 
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=1
-
-COPY ./bundle-plugin.sh /usr/bin/bundle-plugin
-RUN chmod +x /usr/bin/bundle-plugin
+ENV NO_CHECKS=1
 
 WORKDIR /src
 
-ENTRYPOINT [ "bundle-plugin" ]
+ENTRYPOINT [ "npm", "run", "package-plugin" ]
