@@ -53,7 +53,7 @@ function redirect() {
  *
  * @param {string} text Status message to display.
  */
-function status( text ) {
+function setStatus( text ) {
 	elements.status.textContent = text;
 }
 
@@ -62,7 +62,7 @@ function status( text ) {
  *
  * @param {number} percent Percent value of progress.
  */
-function progress( percent ) {
+function setProgress( percent ) {
 	elements.progressFill.style.width = ( percent + '%' );
 }
 
@@ -91,20 +91,20 @@ function dispatch( action ) {
 			break;
 
 		case 'STATUS':
-			status( action.status + '…' );
+			setStatus( action.status + '…' );
 			if ( action.progress ) {
-				progress( action.progress );
+				setProgress( action.progress );
 			}
 			break;
 
 		case 'ERROR':
-			status( 'Error!' );
-			progress( 0 );
+			setStatus( 'Error!' );
+			setProgress( 0 );
 			break;
 
 		case 'DONE':
-			progress( 100 );
-			status( 'Redirecting…' );
+			setProgress( 100 );
+			setStatus( 'Redirecting…' );
 			break;
 	}
 }
