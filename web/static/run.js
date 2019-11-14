@@ -1,6 +1,7 @@
 var state = {},
 	search,
-	number;
+	number,
+	task;
 
 var elements = [
 	'status',
@@ -163,9 +164,11 @@ function listen( id ) {
 
 /**
  * Creates a new container.
+ *
+ * @return {Promise} Promise resolving once container created.
  */
 function create() {
-	window.fetch( 'https://api.github.com/repos/WordPress/gutenberg/pulls/' + number )
+	return window.fetch( 'https://api.github.com/repos/WordPress/gutenberg/pulls/' + number )
 		.then( function( response ) {
 			if ( response.status === 404 ) {
 				return Promise.reject();
@@ -183,14 +186,6 @@ function create() {
 		.then( function( id ) {
 			window.localStorage.setItem( number, id );
 			return listen( id );
-		} )
-		.then( function() {
-			window.localStorage.removeItem( number );
-			redirect();
-		} )
-		.catch( function() {
-			window.localStorage.removeItem( number );
-			window.location = '/?pull=' + number;
 		} );
 }
 
@@ -207,10 +202,18 @@ elements.create.addEventListener( 'submit', function( event ) {
 
 if ( number ) {
 	if ( window.localStorage[ number ] ) {
-		listen( window.localStorage[ number ] );
+		task = listen( window.localStorage[ number ] );
 	} else {
-		create();
+		task = create();
 	}
+
+	task.then( function() {
+		window.localStorage.removeItem( number );
+		redirect();
+	} ).catch( function() {
+		window.localStorage.removeItem( number );
+		window.location = '/?pull=' + number;
+	} );
 
 	show( 'run' );
 } else {
