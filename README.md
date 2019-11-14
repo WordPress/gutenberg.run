@@ -6,7 +6,7 @@
 
 ## Installation
 
-[Docker](https://www.docker.com/) is the only requirement to run Gutenberg Run locally.
+[Docker](https://www.docker.com/) (with [Docker Compose](https://docs.docker.com/compose/install/)) is the only requirement to run Gutenberg Run locally.
 
 After cloning the repository, run `docker-compose up` in the cloned directory.
 
