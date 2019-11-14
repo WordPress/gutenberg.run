@@ -145,10 +145,6 @@ body:not([data-active="run"]) #run {
 	font-family: 'Noto Serif', serif;
 }
 
-#status:not( :empty )::after {
-	content: '…';
-}
-
 #progress {
 	max-width: 360px;
 	width: 90%;

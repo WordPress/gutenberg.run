@@ -90,15 +90,20 @@ function dispatch( action ) {
 			break;
 
 		case 'STATUS':
-			status( action.status );
+			status( action.status + '…' );
 			if ( action.progress ) {
 				progress( action.progress );
 			}
 			break;
 
+		case 'ERROR':
+			status( 'Error!' );
+			progress( 0 );
+			break;
+
 		case 'DONE':
 			progress( 100 );
-			status( 'Redirecting' );
+			status( 'Redirecting…' );
 			break;
 	}
 }
@@ -134,7 +139,7 @@ function listen( id ) {
 
 		dispatch( action );
 
-		if ( action.progress === 100 ) {
+		if ( action.type === 'DONE' || action.type === 'ERROR' ) {
 			source.close();
 			resolve();
 		}

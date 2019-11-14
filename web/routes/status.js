@@ -42,15 +42,7 @@ async function respond( request, response ) {
 		}
 	}
 
-	response.write(
-		'data:' +
-		JSON.stringify( {
-			type: 'STATUS',
-			status: 'Redirecting',
-			progress: 100,
-		} ) +
-		'\n\n'
-	);
+	response.write( 'data:{"type":"DONE"}\n\n' );
 }
 
 /**
