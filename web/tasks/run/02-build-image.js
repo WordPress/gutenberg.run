@@ -2,7 +2,7 @@
  * External dependencies
  */
 
-const { join } = require( 'path' );
+const { join, posix } = require( 'path' );
 const { access, rename } = require( 'fs' ).promises;
 const execa = require( 'execa' );
 const del = require( 'del' );
@@ -31,7 +31,7 @@ async function* run( task, meta ) {
 	const { sha, lock } = meta;
 
 	// Check if built copy is already available.
-	const tree = join( TREES_ROOT, sha );
+	const tree = posix.join( TREES_ROOT, sha );
 	yield { type: 'STATUS', status: 'Checking tree checkout', sha };
 	try {
 		await access( tree );
