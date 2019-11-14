@@ -18,7 +18,17 @@ docker-compose up
 
 By default, Gutenberg Run assumes a development environment.
 
-Since Gutenberg Run provisions new sites using subdomains, to develop locally you should configure wildcard DNS handling. `dnsmasq` is ideal for this ([see macOS installation instructions](https://www.stevenrombauts.be/2018/01/use-dnsmasq-instead-of-etc-hosts/)).
+Since Gutenberg Run provisions new sites using randomized subdomains, you should configure wildcard DNS handling to develop locally.
+
+If you're developing using macOS, `dnsmasq` is ideal for this. With [Homebrew](https://brew.sh/) installed, you can [follow guidance from this article](https://www.stevenrombauts.be/2018/01/use-dnsmasq-instead-of-etc-hosts/), where the steps for this project should look something like:
+
+```sh
+brew install dnsmasq # Install dnsmasq
+echo "address=/.gutenberg.run.test/127.0.0.1" >> /usr/local/etc/dnsmasq.conf # Configure dnsmasq to redirect gutenberg.run.test subdomains to localhost
+sudo brew services start dnsmasq # Start dnsmasq process
+sudo mkdir -p /etc/resolver # Create resolvers directory for macOS DNS query overrides
+sudo sh -c 'echo "nameserver 127.0.0.1" > /etc/resolver/gutenberg.run.test' # Configure gutenberg.run.test DNS query behavior
+```
 
 ### Configuration
 
