@@ -41,6 +41,26 @@ The following options exist, configured by the presence of environment variables
 - `SENTRY_DSN`: [Sentry data source name](https://docs.sentry.io/platforms/javascript/?platform=node), when using Sentry for error logging
 - `BUILD_TTL_DAYS`: The length in time to keep built archives after last provision, in days (default `30`)
 
+### Updating
+
+If you have followed the installation instructions using Git, you can pull the latest changes from the working directory:
+
+```
+git pull
+```
+
+Regardless whether there are containers actively running, you will likely need to rebuild the images. You can (re)start the containers with rebuild using the following command:
+
+```
+docker-compose up -d --build
+```
+
+If you know a specific image(s) to rebuild, simply append it to the previous command:
+
+```
+docker-compose up -d --build cleaner web
+```
+
 ## License
 
 Copyright 2019 Andrew Duthie
