@@ -11,4 +11,4 @@ done
 /bin/sh -e /purge-containers.sh
 
 # Run Cron in foreground to keep container alive.
-crond -f
+crond -f -L /var/log/cron.log
