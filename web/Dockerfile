@@ -11,6 +11,8 @@ WORKDIR /src/web
 
 COPY package*.json ./
 COPY . .
+RUN npm install -g npm@latest
+RUN npm verify
 RUN npm ci
 
 # Startup
