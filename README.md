@@ -41,6 +41,8 @@ The following options exist, configured by the presence of environment variables
 - `SENTRY_DSN`: [Sentry data source name](https://docs.sentry.io/platforms/javascript/?platform=node), when using Sentry for error logging
 - `BUILD_TTL_DAYS`: The length in time to keep built archives after last provision, in days (default `30`)
 
+You can assign values to these by creating a [`.env` file](https://docs.docker.com/compose/env-file/) at the root of the project directory, or as a persistent user or system environment variable.
+
 ### Updating
 
 If you have followed the installation instructions using Git, you can pull the latest changes from the working directory:
