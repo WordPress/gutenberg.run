@@ -3,7 +3,7 @@ FROM alpine
 RUN apk add nodejs-npm git php7 zip bash curl
 
 RUN npm install -g npm@latest
-RUN npm verify
+RUN npm cache verify
 
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=1
 ENV NO_CHECKS=1
