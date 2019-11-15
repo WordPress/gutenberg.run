@@ -5,6 +5,7 @@
 const execa = require( 'execa' );
 const { join } = require( 'path' );
 const { access } = require( 'fs' ).promises;
+const { default: PQueue } = require( 'p-queue' );
 
 /**
  * Internal dependencies
@@ -12,6 +13,12 @@ const { access } = require( 'fs' ).promises;
 
 const { SOURCE_ROOT, TREES_ROOT, BUILD_ROOT } = require( '../../constants' );
 const getLock = require( '../../util/get-lock' );
+
+/**
+ * To avoid conflicting concurrent fetches, assure at most a single fetch in the
+ * bare repository at a time.
+ */
+const cloneQueue = new PQueue( { concurrency: 1 } );
 
 /**
  * Clones branch.
@@ -43,7 +50,7 @@ async function* run( task, meta ) {
 
 	// Fetch latest source from remote.
 	yield { type: 'STATUS', status: 'Fetching latest remote', progress: 10 };
-	await execa( 'git', [ 'fetch', 'origin', sha ], { cwd: SOURCE_ROOT } );
+	await cloneQueue.add( () => execa( 'git', [ 'fetch', 'origin', sha ], { cwd: SOURCE_ROOT } ) );
 
 	// Create clone from bare repository.
 	yield { type: 'STATUS', status: 'Cloning repository', progress: 20 };
