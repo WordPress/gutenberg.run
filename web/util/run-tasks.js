@@ -36,6 +36,22 @@ async function* runTasks( group, ...args ) {
 				}
 			}
 		} catch ( error ) {
+			// This specifically handles errors emitted by the `execa` module
+			// to include the associated output with the error message. This was
+			// removed in execa@2, and is planned to be reintroduced in a future
+			// release, at which point this handling could be removed.
+			//
+			// See: https://github.com/sindresorhus/execa/issues/395
+			if ( error.stderr || error.stdout ) {
+				error.message = [
+					error.message,
+					error.stderr,
+					error.stdout,
+				].filter( Boolean )
+					.map( ( output ) => output.toString() )
+					.join( '\n' );
+			}
+
 			const eventId = captureException( error );
 			yield { type: 'ERROR', eventId };
 
