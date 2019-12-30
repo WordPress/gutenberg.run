@@ -12,15 +12,16 @@ RUN apk add curl sudo mariadb-client php7-json php7-phar php7-common \
 
 ENV WP_CLI_CACHE_DIR=/home/www-data/.wp-cli/cache/
 ENV PAGER="more"
-RUN adduser www-data -D
 RUN curl -o /bin/wp https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
 RUN chmod +x /bin/wp
 
-# Download WordPress
+# Configure user
 
 WORKDIR /usr/www/
-RUN chown -R www-data .
-RUN sudo -u www-data -i -- wp core download --path=/usr/www
+RUN adduser www-data -D
+RUN addgroup www-data www-data
+RUN chown -R www-data:www-data .
+USER www-data
 
 # Install dependant plugins
 
@@ -28,5 +29,9 @@ RUN mkdir -p wp-content/mu-plugins
 RUN curl https://raw.githubusercontent.com/aduth/wp-time-remaining/master/index.php > wp-content/mu-plugins/time-remaining.php
 RUN curl https://raw.githubusercontent.com/aduth/wp-disable-nux/master/index.php > wp-content/mu-plugins/disable-nux.php
 COPY ./set-cookie.php wp-content/mu-plugins/set-cookie.php
+
+# Download WordPress
+
+RUN wp core download
 
 ENTRYPOINT [ "php", "-S", "0.0.0.0:9000" ]

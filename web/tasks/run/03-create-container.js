@@ -92,10 +92,6 @@ async function* run( task, meta ) {
 	yield { type: 'STATUS', status: 'Creating site configuration', progress: 80 };
 	await execa( 'docker', [
 		'exec',
-		'-w',
-		'/usr/www',
-		'--user',
-		'www-data',
 		containerId,
 		'/bin/sh',
 		'-c',
@@ -111,10 +107,6 @@ async function* run( task, meta ) {
 	};
 	await execa( 'docker', [
 		'exec',
-		'-w',
-		'/usr/www',
-		'--user',
-		'www-data',
 		containerId,
 		'/bin/sh',
 		'-c',
@@ -127,10 +119,6 @@ async function* run( task, meta ) {
 	yield { type: 'STATUS', status: 'Configuring user account', progress: 90 };
 	await execa( 'docker', [
 		'exec',
-		'-w',
-		'/usr/www',
-		'--user',
-		'www-data',
 		containerId,
 		'/bin/sh',
 		'-c',
@@ -141,10 +129,6 @@ async function* run( task, meta ) {
 	yield { type: 'STATUS', status: 'Installing plugin', progress: 95 };
 	await execa( 'docker', [
 		'exec',
-		'-w',
-		'/usr/www',
-		'--user',
-		'www-data',
 		containerId,
 		'/bin/sh',
 		'-c',
