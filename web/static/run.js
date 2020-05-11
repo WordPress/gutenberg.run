@@ -1,6 +1,7 @@
 var state = {},
 	search,
 	number,
+	branch,
 	task;
 
 var elements = [
@@ -163,23 +164,15 @@ function listen( id ) {
 }
 
 /**
- * Creates a new container.
+ * Creates a new container from a commit hash.
+ *
+ * @param {string} sha Commit hash.
  *
  * @return {Promise} Promise resolving once container created.
  */
-function create() {
-	return window.fetch( 'https://api.github.com/repos/WordPress/gutenberg/pulls/' + number )
-		.then( function( response ) {
-			if ( response.status === 404 ) {
-				return Promise.reject();
-			}
-
-			return response.json();
-		} )
-		.then( function( pull ) {
-			var url = '/create/' + pull.merge_commit_sha;
-			return window.fetch( url, { method: 'POST' } );
-		} )
+function create( sha ) {
+	var url = '/create/' + sha;
+	return window.fetch( url, { method: 'POST' } )
 		.then( function( response ) {
 			return response.text();
 		} )
@@ -189,9 +182,49 @@ function create() {
 		} );
 }
 
+/**
+ * Creates a new container from a pull request number.
+ *
+ * @param {number} pullNumber Pull request number.
+ *
+ * @return {Promise} Promise resolving once container created.
+ */
+function createFromPull( pullNumber ) {
+	return window.fetch( 'https://api.github.com/repos/WordPress/gutenberg/pulls/' + pullNumber )
+		.then( function( response ) {
+			return response.status === 404 ? Promise.reject() : response.json();
+		} )
+		.then( function( body ) {
+			return body.merge_commit_sha;
+		} )
+		.then( create );
+}
+
+/**
+ * Creates a new container from a branch name.
+ *
+ * @param {string} branchName Branch name.
+ *
+ * @return {Promise} Promise resolving once container created.
+ */
+function createFromBranch( branchName ) {
+	return window.fetch( 'https://api.github.com/repos/WordPress/gutenberg/branches/' + branchName )
+		.then( function( response ) {
+			return response.status === 404 ? Promise.reject() : response.json();
+		} )
+		.then( function( body ) {
+			return body.commit.sha;
+		} )
+		.then( create );
+}
+
 // Determine pull request from which to create container, or listen to progress
 // if build is ongoing, if exists.
 number = window.location.pathname.slice( 1 );
+search = window.location.search.slice( 1 );
+if ( search && search.indexOf( 'branch=' ) === 0 ) {
+	branch = search.slice( 7 );
+}
 
 // Assign form handler for home route to navigate to build route.
 elements.create.addEventListener( 'submit', function( event ) {
@@ -200,24 +233,32 @@ elements.create.addEventListener( 'submit', function( event ) {
 	window.location = '/' + number;
 } );
 
-if ( number ) {
-	if ( window.localStorage[ number ] ) {
-		task = listen( window.localStorage[ number ] );
-	} else {
-		task = create();
+if ( number || branch ) {
+	if ( window.localStorage[ number || branch ] ) {
+		task = listen( window.localStorage[ number || branch ] );
+	} else if ( number ) {
+		task = createFromPull( number );
+	} else if ( branch ) {
+		task = createFromBranch( branch );
 	}
 
 	task.then( function() {
-		window.localStorage.removeItem( number );
+		window.localStorage.removeItem( number || branch );
 		redirect();
 	} ).catch( function() {
-		window.localStorage.removeItem( number );
-		window.location = '/?pull=' + number;
+		var errorRedirect;
+
+		window.localStorage.removeItem( number || branch );
+
+		errorRedirect = '/';
+		if ( number ) {
+			errorRedirect += '?pull=' + number;
+		}
+		window.location = errorRedirect;
 	} );
 
 	show( 'run' );
 } else {
-	search = window.location.search.slice( 1 );
 	if ( search && search.indexOf( 'pull=' ) === 0 ) {
 		number = Number( search.slice( 5 ) );
 	}
