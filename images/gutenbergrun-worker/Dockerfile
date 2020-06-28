@@ -10,4 +10,4 @@ ENV NO_CHECKS=1
 
 WORKDIR /src
 
-ENTRYPOINT [ "npm", "run", "package-plugin" ]
+ENTRYPOINT [ "npm", "run", "build:plugin-zip" ]
