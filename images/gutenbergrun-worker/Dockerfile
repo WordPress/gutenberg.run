@@ -1,6 +1,6 @@
-FROM alpine
+FROM node:lts-alpine
 
-RUN apk add nodejs-npm git php7 zip bash curl
+RUN apk add git php7 zip bash
 
 RUN npm install -g npm@latest
 RUN npm cache verify
