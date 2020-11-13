@@ -1,6 +1,6 @@
 FROM node:lts-alpine
 
-RUN apk add git php7 zip bash
+RUN apk add git php7 zip bash curl
 
 RUN npm install -g npm@latest
 RUN npm cache verify
