@@ -12,7 +12,6 @@ const execa = require( 'execa' );
 const {
 	IMAGES_ROOT,
 	SITE_IMAGE,
-	WORKER_IMAGE,
 } = require( '../../constants' );
 const getTaggedImageName = require( '../../util/get-tagged-image-name' );
 
@@ -24,7 +23,6 @@ const getTaggedImageName = require( '../../util/get-tagged-image-name' );
 async function run() {
 	await Promise.all( [
 		SITE_IMAGE,
-		WORKER_IMAGE,
 	].map( async ( image ) => {
 		return execa( 'docker', [
 			'build',

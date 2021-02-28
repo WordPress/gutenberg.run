@@ -7,7 +7,6 @@ do
   sleep 2
 done
 
-/bin/sh -e /purge-trees.sh
 /bin/sh -e /purge-containers.sh
 
 # Run Cron in foreground to keep container alive.

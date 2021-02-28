@@ -10,7 +10,7 @@ const builds = require( '../builds' );
  *
  * @type {RegExp}
  */
-const REGEXP_ROUTE_PATH = /^\/create\/([a-z0-9]+)/;
+const REGEXP_ROUTE_PATH = /^\/create\/(\d+)/;
 
 /**
  * HTTP response handler for route.
@@ -19,11 +19,11 @@ const REGEXP_ROUTE_PATH = /^\/create\/([a-z0-9]+)/;
  * @param {http.ClientResponse} response Response object.
  */
 async function respond( request, response ) {
-	const sha = request.parsed.pathname.match( REGEXP_ROUTE_PATH )[ 1 ];
+	const pr = request.parsed.pathname.match( REGEXP_ROUTE_PATH )[ 1 ];
 
 	const id = getShortId();
 
-	builds.create( id, 'run', { sha, id } );
+	builds.create( id, 'run', { pr, id } );
 
 	response.writeHead( 200, {
 		'Content-Type': 'text/plain',

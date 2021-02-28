@@ -22,9 +22,3 @@ do
 	mysql -uroot --password="$MYSQL_ROOT_PASSWORD" -h db -e "DROP DATABASE IF EXISTS container_$container_name;"
 	docker rm -f $container_id
 done
-
-#============================
-# Remove builds files last modified two weeks ago.
-#============================
-
-find /src/build -type f -mtime +$BUILD_TTL_DAYS -maxdepth 1 -delete

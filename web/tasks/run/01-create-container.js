@@ -3,8 +3,6 @@
  */
 
 const execa = require( 'execa' );
-const touch = require( 'touch' );
-const { join } = require( 'path' );
 
 /**
  * Internal dependencies
@@ -14,11 +12,10 @@ const getShortId = require( '../../util/get-short-id' );
 const {
 	MYSQL_ROOT_PASSWORD,
 	BASE_HOSTNAME,
-	HOST_BUILD_ROOT,
-	BUILD_ROOT,
 	SITE_IMAGE,
 	CONTAINER_TTL_SECONDS,
 	PUBLIC_NETWORK_NAME,
+	ARTIFACT_DOWNLOAD_URL,
 } = require( '../../constants' );
 const getTaggedImageName = require( '../../util/get-tagged-image-name' );
 
@@ -31,12 +28,7 @@ const getTaggedImageName = require( '../../util/get-tagged-image-name' );
  * @return {Promise} Promise resolving once task completes.
  */
 async function* run( task, meta ) {
-	const { id, sha } = meta;
-
-	// At this point, the build file is guaranteed. This task is run for every
-	// container. Touch the build file to reset its expiration, where build
-	// files are removed on the basis of last-modified.
-	touch( join( BUILD_ROOT, sha + '.zip' ) );
+	const { id, pr } = meta;
 
 	const endTime = Math.round( Date.now() / 1000 ) + CONTAINER_TTL_SECONDS;
 
@@ -47,7 +39,7 @@ async function* run( task, meta ) {
 	};
 
 	// Create database.
-	yield { type: 'STATUS', status: 'Creating database', progress: 65 };
+	yield { type: 'STATUS', status: 'Creating database', progress: 10 };
 	await execa( 'mysql', [
 		'-uroot',
 		'--password=' + MYSQL_ROOT_PASSWORD,
@@ -58,7 +50,7 @@ async function* run( task, meta ) {
 	] );
 
 	// Create database user.
-	yield { type: 'STATUS', status: 'Creating database user', progress: 70 };
+	yield { type: 'STATUS', status: 'Creating database user', progress: 20 };
 	await execa( 'mysql', [
 		'-uroot',
 		'--password=' + MYSQL_ROOT_PASSWORD,
@@ -70,7 +62,7 @@ async function* run( task, meta ) {
 	] );
 
 	// Create container.
-	yield { type: 'STATUS', status: 'Creating container', progress: 75 };
+	yield { type: 'STATUS', status: 'Creating container', progress: 30 };
 	const { stdout: containerId } = await execa( 'docker', [
 		'run',
 		'-d',
@@ -82,14 +74,12 @@ async function* run( task, meta ) {
 		`VIRTUAL_HOST=${ id }.${ BASE_HOSTNAME }`,
 		'-e',
 		`TIME_REMAINING_END=${ endTime }`,
-		'-v',
-		HOST_BUILD_ROOT + ':/build',
 		await getTaggedImageName( SITE_IMAGE ),
 	] );
 	yield { type: 'RECEIVE_CONTAINER_ID', containerId: id };
 
 	// Create site configuration.
-	yield { type: 'STATUS', status: 'Creating site configuration', progress: 80 };
+	yield { type: 'STATUS', status: 'Creating site configuration', progress: 40 };
 	await execa( 'docker', [
 		'exec',
 		containerId,
@@ -99,7 +89,7 @@ async function* run( task, meta ) {
 	] );
 
 	// Install site.
-	yield { type: 'STATUS', status: 'Installing site', progress: 85 };
+	yield { type: 'STATUS', status: 'Installing site', progress: 50 };
 	const url = meta.url = `http://${ id }.${ BASE_HOSTNAME }`;
 	const user = meta.user = {
 		user: 'demo',
@@ -112,11 +102,9 @@ async function* run( task, meta ) {
 		'-c',
 		`wp core install --url=${ url } --title="Gutenberg Run" --admin_user=${ user.user } --admin_password=${ user.pass } --admin_email=${ id }@example.com`,
 	] );
-	yield { type: 'RECEIVE_SITE_DETAILS', url };
-	yield { type: 'RECEIVE_USER_CREDENTIALS', user };
 
 	// Give the user a nicer name.
-	yield { type: 'STATUS', status: 'Configuring user account', progress: 90 };
+	yield { type: 'STATUS', status: 'Configuring user account', progress: 60 };
 	await execa( 'docker', [
 		'exec',
 		containerId,
@@ -126,14 +114,25 @@ async function* run( task, meta ) {
 	] );
 
 	// Install Gutenberg plugin.
-	yield { type: 'STATUS', status: 'Installing plugin', progress: 95 };
-	await execa( 'docker', [
-		'exec',
-		containerId,
-		'/bin/sh',
-		'-c',
-		`wp plugin install /build/${ sha }.zip --activate`,
-	] );
+	yield { type: 'STATUS', status: 'Installing plugin', progress: 70 };
+	try {
+		await execa( 'docker', [
+			'exec',
+			containerId,
+			'/bin/sh',
+			'-c',
+			`curl ${ new URL( pr, ARTIFACT_DOWNLOAD_URL ) } -o artifact.zip; unzip artifact.zip || exit 48; wp plugin install gutenberg.zip --activate`,
+		] );
+
+		yield { type: 'RECEIVE_SITE_DETAILS', url };
+		yield { type: 'RECEIVE_USER_CREDENTIALS', user };
+	} catch ( error ) {
+		if ( error.exitCode === 48 ) {
+			yield { type: 'INVALID' };
+		} else {
+			throw error;
+		}
+	}
 }
 
 module.exports = {

@@ -1,7 +1,6 @@
 var state = {},
 	search,
 	number,
-	branch,
 	task;
 
 var elements = [
@@ -103,6 +102,11 @@ function dispatch( action ) {
 			setProgress( 0 );
 			break;
 
+		case 'INVALID':
+			setStatus( 'Invalid pull request' );
+			setProgress( 0 );
+			break;
+
 		case 'DONE':
 			setProgress( 100 );
 			setStatus( 'Redirecting…' );
@@ -141,7 +145,11 @@ function listen( id ) {
 
 		dispatch( action );
 
-		if ( action.type === 'DONE' || action.type === 'ERROR' ) {
+		if (
+			action.type === 'DONE' ||
+			action.type === 'ERROR' ||
+			action.type === 'INVALID'
+		) {
 			source.close();
 			resolve();
 		}
@@ -164,14 +172,14 @@ function listen( id ) {
 }
 
 /**
- * Creates a new container from a commit hash.
+ * Creates a new container from a pull request number.
  *
- * @param {string} sha Commit hash.
+ * @param {number} pullNumber Pull request number.
  *
  * @return {Promise} Promise resolving once container created.
  */
-function create( sha ) {
-	var url = '/create/' + sha;
+function createFromPull( pullNumber ) {
+	var url = '/create/' + pullNumber;
 	return window.fetch( url, { method: 'POST' } )
 		.then( function( response ) {
 			return response.text();
@@ -182,49 +190,10 @@ function create( sha ) {
 		} );
 }
 
-/**
- * Creates a new container from a pull request number.
- *
- * @param {number} pullNumber Pull request number.
- *
- * @return {Promise} Promise resolving once container created.
- */
-function createFromPull( pullNumber ) {
-	return window.fetch( 'https://api.github.com/repos/WordPress/gutenberg/pulls/' + pullNumber )
-		.then( function( response ) {
-			return response.status === 404 ? Promise.reject() : response.json();
-		} )
-		.then( function( body ) {
-			return body.merge_commit_sha;
-		} )
-		.then( create );
-}
-
-/**
- * Creates a new container from a branch name.
- *
- * @param {string} branchName Branch name.
- *
- * @return {Promise} Promise resolving once container created.
- */
-function createFromBranch( branchName ) {
-	return window.fetch( 'https://api.github.com/repos/WordPress/gutenberg/branches/' + branchName )
-		.then( function( response ) {
-			return response.status === 404 ? Promise.reject() : response.json();
-		} )
-		.then( function( body ) {
-			return body.commit.sha;
-		} )
-		.then( create );
-}
-
 // Determine pull request from which to create container, or listen to progress
 // if build is ongoing, if exists.
 number = window.location.pathname.slice( 1 );
 search = window.location.search.slice( 1 );
-if ( search && search.indexOf( 'branch=' ) === 0 ) {
-	branch = search.slice( 7 );
-}
 
 // Assign form handler for home route to navigate to build route.
 elements.create.addEventListener( 'submit', function( event ) {
@@ -233,22 +202,20 @@ elements.create.addEventListener( 'submit', function( event ) {
 	window.location = '/' + number;
 } );
 
-if ( number || branch ) {
-	if ( window.localStorage[ number || branch ] ) {
-		task = listen( window.localStorage[ number || branch ] );
+if ( number ) {
+	if ( window.localStorage[ number ] ) {
+		task = listen( window.localStorage[ number ] );
 	} else if ( number ) {
 		task = createFromPull( number );
-	} else if ( branch ) {
-		task = createFromBranch( branch );
 	}
 
 	task.then( function() {
-		window.localStorage.removeItem( number || branch );
+		window.localStorage.removeItem( number );
 		redirect();
 	} ).catch( function() {
 		var errorRedirect;
 
-		window.localStorage.removeItem( number || branch );
+		window.localStorage.removeItem( number );
 
 		errorRedirect = '/';
 		if ( number ) {

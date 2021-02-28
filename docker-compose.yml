@@ -27,12 +27,9 @@ services:
     build: ./images/gutenbergrun-cleaner
     environment:
       - CONTAINER_TTL_SECONDS=${CONTAINER_TTL_SECONDS:-86400}
-      - BUILD_TTL_DAYS=${BUILD_TTL_DAYS:-30}
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-password}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:delegated
-      - ./build:/src/build:delegated
-      - ./trees:/src/trees:delegated
     depends_on:
       - db
     networks:
