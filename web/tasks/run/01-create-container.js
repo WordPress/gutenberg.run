@@ -86,7 +86,11 @@ async function* run( task, meta ) {
 		'/bin/sh',
 		'-c',
 		`wp config create --dbname=${ db.name } --dbuser=${ db.user } --dbpass=${ db.pass } --dbhost=db --extra-php <<PHP
+define( 'WP_SITEURL', 'http://${ id }.${ BASE_HOSTNAME }' );
+define( 'WP_HOME', 'http://${ id }.${ BASE_HOSTNAME }' );
 define( 'DISALLOW_FILE_MODS', true );
+define( 'WP_HTTP_BLOCK_EXTERNAL', true );
+define( 'WP_ACCESSIBLE_HOSTS', '*.wordpress.org,*.w.org' );
 PHP`,
 	] );
 

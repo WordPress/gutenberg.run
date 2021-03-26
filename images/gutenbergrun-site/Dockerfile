@@ -29,6 +29,7 @@ RUN mkdir -p wp-content/mu-plugins
 RUN curl https://raw.githubusercontent.com/aduth/wp-time-remaining/master/index.php > wp-content/mu-plugins/time-remaining.php
 RUN curl https://raw.githubusercontent.com/aduth/wp-disable-nux/master/index.php > wp-content/mu-plugins/disable-nux.php
 COPY ./set-cookie.php wp-content/mu-plugins/set-cookie.php
+COPY ./security.php wp-content/mu-plugins/security.php
 
 # Download WordPress
 
