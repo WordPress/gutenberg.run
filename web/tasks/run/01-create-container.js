@@ -85,7 +85,9 @@ async function* run( task, meta ) {
 		containerId,
 		'/bin/sh',
 		'-c',
-		`wp config create --dbname=${ db.name } --dbuser=${ db.user } --dbpass=${ db.pass } --dbhost=db`,
+		`wp config create --dbname=${ db.name } --dbuser=${ db.user } --dbpass=${ db.pass } --dbhost=db --extra-php <<PHP
+define( 'DISALLOW_FILE_MODS', true );
+PHP`,
 	] );
 
 	// Install site.
